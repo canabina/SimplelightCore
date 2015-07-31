@@ -1,5 +1,5 @@
 {
-    "name": "canabina/simple-light-framework",
+    "name": "simplelight/framework",
     "type": "Framework",
     "description": "Small framework",
     "require": {
