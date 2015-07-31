@@ -21,7 +21,7 @@ class Base
 	public static function getConfig($key = false)
 	{
 
-		$config = require(__DIR__.'/../../config/config.php');
+		$config = require( DOCUMENT_ROOT.'config/config.php' );
 		return $key ? $config[$key] : $config;
 	}
 
@@ -31,14 +31,13 @@ class Base
 		require_once 'CBasetool.php';
 		require_once 'CModel.php';
 		require_once 'CController.php';
-		require_once __DIR__.'/../libs/smarty/libs/Smarty.class.php';
 	}
 
 	public function router(){
 		Core::$model = new Model;
 		Core::$app = new Basetools();
 		$frontend_module = self::getConfig('forntend_module_folder');
-		$modules = array_flip(scandir('app/modules', 1));
+		$modules = array_flip(scandir(DOCUMENT_ROOT.'app/modules', 1));
 		$use_module = false;
 		unset($modules[0], $modules[1]);
 		$uri = explode('/', $_SERVER['REQUEST_URI']);
@@ -48,7 +47,7 @@ class Base
 		$use_module = isset($modules[$data_url[0]]) ? true : false;
 		$module = $use_module ? $data_url[0] : $frontend_module;
 		$controller_name = $use_module ? ($data_url[1] ? ucfirst($data_url[1]).'Controller' : 'MainController') : ($data_url[0] ? ucfirst($data_url[0]).'Controller' : 'MainController') ;
-		$dir = 'app/modules/'.$module.'/controllers/';
+		$dir = DOCUMENT_ROOT.'app/modules/'.$module.'/controllers/';
 		if (!file_exists($dir.$controller_name.'.php'))
 			return core::$app->application->redirect('/', true, 'Такой страници не существует');
 		require_once $dir.'IndexController.php';

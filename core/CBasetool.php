@@ -26,8 +26,8 @@ class Basetools
 
 	public function __get($class)
 	{
-		if (!isset($this->tool[$class]) && file_exists($_SERVER['DOCUMENT_ROOT'].'/core/basetools/'.$this->classes[$class].'.php')){
-			require_once $_SERVER['DOCUMENT_ROOT'].'/core/basetools/'.$this->classes[$class].'.php';
+		if (!isset($this->tool[$class]) && file_exists(__DIR__.'/../basetools/'.$this->classes[$class].'.php')){
+			require_once __DIR__.'/../basetools/'.$this->classes[$class].'.php';
 			$this->tool[$class] = new $class;
 		}
 		return $this->tool[$class];

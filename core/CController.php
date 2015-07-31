@@ -45,7 +45,7 @@ class Controller extends Core
 		$this->design = new Smarty;
 		$this->configuration = core::getConfig();
 		$this->design->setCompileDir($this->configuration['compiledDir']);
-		$path = $_SERVER['DOCUMENT_ROOT'].'/app/modules/'.$this->module.'/views/';
+		$path = DOCUMENT_ROOT.'/app/modules/'.$this->module.'/views/';
 		$this->design->template_dir = $path;
 	}
 
@@ -53,7 +53,7 @@ class Controller extends Core
 
 	public function render() {
 		if ($this->view) {
-			$path = $_SERVER['DOCUMENT_ROOT'].'/app/modules/'.$this->module.'/views/';
+			$path = DOCUMENT_ROOT.'/app/modules/'.$this->module.'/views/';
 			$this->design->assign('url', core::$app->request->currentUrl());
 			$this->design->assign('content', $this->design->fetch($path.$this->view.'.tpl'));
 			$this->design->assign('page_title', $this->pageTitle ? $this->pageTitle : $this->configuration['siteName']);
@@ -66,7 +66,7 @@ class Controller extends Core
 	public function renderPartial($view_name, $vars = false){
 		if ($vars)
 			$this->assignVars($vars);
-		$this->design->display($_SERVER['DOCUMENT_ROOT'].'/app/modules/'.$this->module.'/views/'.$view_name.'.tpl');
+		$this->design->display(DOCUMENT_ROOT.'/app/modules/'.$this->module.'/views/'.$view_name.'.tpl');
 		return $this->end();
 	}
 
