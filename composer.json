@@ -1,23 +1,13 @@
 {
-    "name": "canabina/SimpleLight",
+    "name": "canabina/SimplelightFramevork",
+    "type": "Framework",
     "description": "Small framework",
-    "authors": [
-        {
-            "name": "Kostya Altuhov",
-            "email": "konstantin255@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev",
     "require": {
         "php": ">=5.3.0"
     },
     "autoload": {
-        "classmap": [
-            "basetools/",
-            "core/CBase.php",
-            "core/CController.php",
-            "core/CModel.php",
-            "core/CBasetool.php"
-        ]
+        "psr-0": {
+            "core": "core"
+        }
     }
 }
