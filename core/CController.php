@@ -44,7 +44,7 @@ class Controller extends Core
 	function __construct() {
 		$this->design = new Smarty;
 		$this->configuration = core::getConfig();
-		$this->design->setCompileDir($this->configuration['compiledDir']);
+		$this->design->setCompileDir(DOCUMENT_ROOT.$this->configuration['compiledDir']);
 		$path = DOCUMENT_ROOT.'/app/modules/'.$this->module.'/views/';
 		$this->design->template_dir = $path;
 	}
