@@ -48,16 +48,15 @@ class Base
 		$module = $use_module ? $data_url[0] : $frontend_module;
 		$controller_name = $use_module ? ($data_url[1] ? ucfirst($data_url[1]).'Controller' : 'MainController') : ($data_url[0] ? ucfirst($data_url[0]).'Controller' : 'MainController') ;
 		$dir = DOCUMENT_ROOT.'app/modules/'.$module.'/controllers/';
-		if (!file_exists($dir.$controller_name.'.php'))
-			return core::$app->application->redirect('/', true, 'Такой страници не существует');
 		require_once $dir.'IndexController.php';
-		require_once $dir.$controller_name.'.php';
+		$set_error = false;
+		if( !file_exists($dir.$controller_name.'.php') ) { $set_error = 1; $controller_name = 'IndexController'; }  else require_once $dir.$controller_name.'.php';
 		$action = $use_module ? ($data_url[2] ? 'action'.ucfirst($data_url[2]) : 'actionIndex') : ($data_url[1] ? 'action'.ucfirst($data_url[1]) : 'actionIndex');
 		$this->addParams($data_url);
 		$controller = new $controller_name;
 		$controller->always();
 		$controller->module = $module;
-		method_exists($controller, $action) ? $controller->$action() : $controller->actionIndex() ;
+		(!$set_error) ? method_exists($controller, $action) ? $controller->$action() : $controller->actionIndex() : $controller->isError('404');
 		$controller->render();
 	}
 
