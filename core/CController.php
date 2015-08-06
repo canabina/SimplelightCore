@@ -54,7 +54,6 @@ class Controller extends Core
 	public function render() {
 		if ($this->view) {
 			$path = DOCUMENT_ROOT.'/app/modules/'.$this->module.'/views/';
-			$this->design->assign('url', core::$app->request->currentUrl());
 			$this->design->assign('content', $this->design->fetch($path.$this->view.'.tpl'));
 			$this->design->assign('page_title', $this->pageTitle ? $this->pageTitle : $this->configuration['siteName']);
 			$this->design->display($path.'layouts/'.$this->layout.'.tpl');
