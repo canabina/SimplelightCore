@@ -22,6 +22,10 @@ class Core extends Base
 	//Экземпляры базовых классов приложения
 
 	public static $app;
+	
+	//Класс для роботы с БД (Medoo Documentaion)
+
+	public static $db;
 
 	//Инициализируем роботу приложения
 
