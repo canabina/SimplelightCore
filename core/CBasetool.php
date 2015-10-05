@@ -14,7 +14,6 @@ class Basetools
 
 	protected $classes = [
 		'cache' => 'CCache',
-		'db' => 'CDatabase',
 		'files' => 'CFiles',
 		'request' => 'CRequest',
 		'session' => 'CSession',
