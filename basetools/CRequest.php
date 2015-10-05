@@ -56,6 +56,10 @@ class request extends Basetools
 		else
 			return $_SERVER;
 	}
+	
+	public function isPost(){
+		return !empty($_POST);
+	}
 
 	//Функция перехватчик $_FILES данных
 
