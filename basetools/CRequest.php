@@ -34,6 +34,12 @@ class request extends Basetools
 	public function currentUrl(){
 		return 'http://'.$this->server('SERVER_NAME').$this->server('REQUEST_URI');
 	}
+	
+	
+	public function isPost(){
+		return !empty($_POST);
+	}
+
 
 	//Функция перехватчик $_POST данных
 
