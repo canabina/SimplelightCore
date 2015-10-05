@@ -19,7 +19,8 @@ class Basetools
 		'request' => 'CRequest',
 		'session' => 'CSession',
 		'db' => 'CDb',
-		'application' => 'CApplication'
+		'application' => 'CApplication',
+		'validator' => 'CValidate'
 	];
 
 	public $tool;
