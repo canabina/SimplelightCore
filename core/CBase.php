@@ -15,6 +15,7 @@ class Base
 
 	public function run(){
 		$this->autoload();
+		$this->inititation();
 		$this->router();
 	}
 
@@ -33,9 +34,22 @@ class Base
 		require_once 'CController.php';
 	}
 
-	public function router(){
+	public function inititation(){
 		Core::$model = new Model;
 		Core::$app = new Basetools();
+		$config_db = self::getConfig('db');
+		$options = [
+				'database_type' => $config_db['optional']['database_type'],
+				'database_name' => $config_db['database'],
+				'server' => $config_db['host'],
+				'username' => $config_db['login'],
+				'password' => $config_db['password'],
+				'charset' => $config_db['optional']['charset']
+		];
+		Core::$db = new Medoo($options);
+	}
+
+	public function router(){
 		$frontend_module = self::getConfig('forntend_module_folder');
 		$modules = array_flip(scandir(DOCUMENT_ROOT.'app/modules', 1));
 		$use_module = false;
