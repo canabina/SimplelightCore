@@ -38,15 +38,18 @@ class Base
 		Core::$model = new Model;
 		Core::$app = new Basetools();
 		$config_db = self::getConfig('db');
-		$options = [
+
+		if (isset($config_db['database']) && !empty($config_db['database'])) {
+			$options = [
 				'database_type' => $config_db['optional']['database_type'],
 				'database_name' => $config_db['database'],
 				'server' => $config_db['host'],
 				'username' => $config_db['login'],
 				'password' => $config_db['password'],
 				'charset' => $config_db['optional']['charset']
-		];
-		Core::$db = new Medoo($options);
+			];
+			Core::$db = new Medoo($options);
+		}		
 	}
 
 	public function router(){
