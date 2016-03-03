@@ -8,7 +8,7 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-0": {
-            "framework": "framework"
+            "framework": "framework.php"
         }
     }
 }
