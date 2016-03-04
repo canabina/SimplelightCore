@@ -119,13 +119,29 @@ class RouteProvider extends Config {
 		$controllersDir = $moduleDir.'/controllers/';
 		$controllerFileName = $controllersDir.$controller_name.'.php';
 		$indexControllerFileName = $controllersDir.'IndexController.php';
-		require_once $indexControllerFileName;
-		require_once $controllerFileName;
-		$controller = new $controller_name($module_name, $controller_name, $action_name);
-		$controller->addToConfigBeforeRender();
-		$controller->always();
-		$controller->$action_name();
-		$controller->addToConfigAfterRender();
+		if (file_exists($indexControllerFileName)) {
+			require_once $indexControllerFileName;
+			if (file_exists($controllerFileName)) {
+				require_once $controllerFileName;
+				if (class_exists($controller_name)) {
+					$controller = new $controller_name($module_name, $controller_name, $action_name);
+					$controller->addToConfigBeforeRender();
+					$controller->always();
+					if (method_exists($controller, $action_name)) {
+						$controller->$action_name();
+					}else{
+						$controller->isError();
+					}
+					$controller->addToConfigAfterRender();
+				}
+			}else{
+				$indexController = new IndexController($module_name, $controller_name, $action_name);
+				$indexController->addToConfigBeforeRender();
+				$indexController->isError();
+				$indexController->addToConfigAfterRender();
+			}
+			
+		}
 
 	}
 
