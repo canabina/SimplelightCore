@@ -126,9 +126,9 @@ class RouteProvider extends Config {
 				if (class_exists($controller_name)) {
 					$controller = new $controller_name($module_name, $controller_name, $action_name);
 					$controller->addToConfigBeforeRender();
-					$controller->always();
 					if (method_exists($controller, $action_name)) {
 						$controller->$action_name();
+						$controller->always();
 					}else{
 						$controller->isError();
 					}
