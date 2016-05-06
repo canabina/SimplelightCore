@@ -14,26 +14,27 @@ require_once 'RouteProvider/RouteProvider.php';
 class Core extends RouteProvider
 {
 
+	public static $routes;
+
 	public function run(){
 
 		$this->autoload();
 
 		$this->inititation();
 		
-		parent::__construct();
+		parent::__construct(self::$routes);
 
 	}
 
 	public function autoload(){
 
-		// require_once 'Exception/Exception.php';
+		require_once DOCUMENT_ROOT.'/app/routes.php';
 
 		require_once 'Tools/Tools.php';
 
 		require_once 'Model/Model.php';
 
 		require_once 'Controller/Controller.php';
-
 	}
 
 	public function inititation(){

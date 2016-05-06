@@ -18,7 +18,7 @@ class application extends Basetools
 
 	public function redirect($url, $end = false, $message = '') {
 		header("location: $url");
-		if ($end)
+		if (!$end)
 			$this->end($message);
 	}
 

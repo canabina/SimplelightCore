@@ -9,149 +9,162 @@
  *
  */
 
-
-
 require_once __DIR__.'/../Config/Config.php';
-
 
 class RouteProvider extends Config {
 
-	public $default_controller = 'main';
+	function __construct($configuration = false){
+		if (!$configuration)
+			$this->throwErrorMessage("Pleace, set routes in app/routes.php.", 1);
 
-	public $default_action = 'index';
-
-	public $frontend_module_name;
-
-	public $url_data;
-
-	public $modules_names = [];
-
-	public $current_use_module;
-
-	public $getParams = [];
-
-	public $url_settings;
-
-	public $usingQueryModule;
-
-	public $queryString;
-	
-	function __construct(){
-
-		$this->frontend_module_name = Sili::getConfig('frontend_module_name');
-		$this->queryString = !strrchr($_SERVER['REQUEST_URI'], '?') ? $_SERVER['REQUEST_URI'] : explode('?', $_SERVER['REQUEST_URI'])[0];
-		$this->url_data = $this->getQueryStringData();
-		$this->modules_names = $this->getModulesNames();
-		$this->current_use_module = $this->getCurrentModule();
-		$this->url_settings = Sili::getConfig('components')['url_maneger'];
-		$this->route();
+		$this->beforeApplyCurrentRoute($configuration);
 	}
 
-	public function getQueryStringData($input_uri = false){
+	public function beforeApplyCurrentRoute($configuration = false){
 
-		$output = !$input_uri ? explode('/', $this->queryString) : explode('/', $input_uri);
-
-		$data_url = [];
-
-		foreach ($output as $key => $value)
-			if($value)
-				$data_url[] = $value;
-		
-	
-		return $data_url;
-
-	}
-
-	public function getModulesNames(){
-
-		return array_diff(scandir(DOCUMENT_ROOT.'app/modules'), array('..', '.'));
-
-	} 
-
-	public function route(){
-
-
-		if ($this->modules_names) {
-
-			if ($this->current_use_module['using_query_module']) {
-				unset($this->url_data[0]);
-				$this->url_data = array_values($this->url_data);
-			}
-
-			if (count($this->url_data) > 2) {
-				$this->getParams = array_chunk($this->url_data, 2);
-				unset($this->getParams[0]);
-				$this->addGetParams();
-			}
-
-
-			if (!$this->url_data) {
-				$this->url_data[0] = $this->default_controller;
-				$this->url_data[1] = $this->default_action;	
-			}
-
-
+		if ($configuration) {
 			
-			$controller_name = ucfirst($this->url_data[0].'Controller');
-			$action_name = isset($this->url_data[1]) ? 'action'.ucfirst($this->url_data[1]) : 'actionIndex' ;
-			return $this->perfomRoute($this->current_use_module['module_name'], $controller_name, $action_name);
+			$redirectUri = Sili::$app->request->server('REDIRECT_URL');
+
+			$redirectUriExplode = false;
+
+			if ($redirectUri) 
+				$redirectUriExplode = array_filter(explode('/', $redirectUri));
+
+			if ($redirectUriExplode) 
+				$redirectUriExplode = array_values($redirectUriExplode);
 
 
+			if ($redirectUriExplode) 
+				foreach ($configuration['modules'] as $moduleName => $moduleSettings)
+					if ($redirectUriExplode[0] == $moduleName){
+						if ($redirectUriExplode[0] == explode('/', $moduleSettings['url'])[1])
+							unset($redirectUriExplode[0]);
+						$redirectUriExplode = array_values($redirectUriExplode);
+						return $this->researchParam($moduleSettings, $redirectUriExplode, $moduleName);
+					} 
+
+			return $this->researchParam($configuration['modules'][$configuration['defaultModule']], $redirectUriExplode, $configuration['defaultModule']);
+
+				
 		}else
-			throw new Exception("App modules is not defined", 1);
-	
-		
+			$this->throwErrorMessage("Routes configuration incorrect.", 1);
 	}
 
-	public function getCurrentModule(){
+	public function researchParam($configuration, $uriExplode, $moduleName){
+		if (!$uriExplode && isset($configuration['routing']['/'])) 
+			return $this->executeRoute($currentRoute, $configuration['routing']['/'], false, $moduleName);
+		$routingParseResult = [];
+		$lenUri = count($uriExplode);
+		$currentRoute = '';
+		$setToGet = false;
+		foreach ($configuration['routing'] as $routeUrl => $routeConf) {
+			$urlConfMask = array_filter(explode('/', $routeUrl));
+			if ($urlConfMask) 
+				$urlConfMask = array_values($urlConfMask);
+			else
+				continue;
+			$res = true;
+			$lenUrlConfMask = count($urlConfMask);
+			foreach ($urlConfMask as $confMaskKey => $confMaskValue) {
+				if ($uriExplode[$confMaskKey] != $confMaskValue)
+					if (strpos($confMaskValue, '@') !== false && $lenUrlConfMask <= $lenUri){
+						$setToGet[str_replace('@', '', $confMaskValue)] = $uriExplode[$confMaskKey];
+						continue;
+					}
+					else
+						$res = false;
+			}
+			if ($res)
+				$routingParseResult[] = $routeUrl; 
+		}
+		$currentRoute = false;
+		if ($routingParseResult) {
+			$arrCount = count($routingParseResult);
+			if ($arrCount > 1) {
+				$lastBiggest = 0;
+				$sufixxCount = 0;
+				foreach ($routingParseResult as $urlParseValue) {
+					$len = count(array_filter(explode('/' , $urlParseValue)));
+					if ($len == 1) 
+						$sufixxCount++;	
+					if ($lastBiggest < $len) {
+						$selectBiggest = $urlParseValue;
+						$lastBiggest = $len;
+					}
+				}
+				$currentRoute = $selectBiggest;
+				if ($sufixxCount == $arrCount) {
+					foreach ($routingParseResult as $route) {
+						if (strpos($route, '@') === false) {
+							$currentRoute = $route;
+							break;
+						}
+					}
+				}	
+			}else{
+				$currentRoute = $routingParseResult[0];
+			}
+		}
 
-		$current_use_module = ['module_name' => $this->frontend_module_name, 'using_query_module' => FALSE];
+		$conf = isset($configuration['routing'][$currentRoute]) ? $configuration['routing'][$currentRoute] : false;
 
-		if (in_array($this->url_data[0], $this->modules_names)) 
-			$current_use_module = ['module_name' => $this->url_data[0], 'using_query_module' => TRUE];
-		
-		return $current_use_module;
+		return $this->executeRoute($currentRoute, $conf, $setToGet, $moduleName);
 	}
 
-	public function perfomRoute($module_name, $controller_name, $action_name){		
+	public function executeRoute($routeString, $routeConf, $setToGet = false, $moduleName = false){
 
-		$moduleDir = DOCUMENT_ROOT.'app/modules/'.$module_name;
+		if (is_array($setToGet)) 
+			foreach ($setToGet as $key => $value) 
+				if ($routeString && strpos($routeString, '@'.$key) !== false) 
+					$_GET[$key] = $value;
+
+		$moduleDir = DOCUMENT_ROOT.'app/modules/'.$moduleName;	
 		$controllersDir = $moduleDir.'/controllers/';
-		$controllerFileName = $controllersDir.$controller_name.'.php';
+		$controllerName = ucfirst($routeConf['controller']).'Controller';
+		$controllerFileName = $controllersDir.$controllerName.'.php';
 		$indexControllerFileName = $controllersDir.'IndexController.php';
+		$isAjax = true;
+
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') 
+			$isAjax = true;
+		
+		if (!isset($routeConf['action'])) 
+			$action_name = 'index';
+		else
+			$action_name = $routeConf['action'];
+		
 		if (file_exists($indexControllerFileName)) {
 			require_once $indexControllerFileName;
 			if (file_exists($controllerFileName)) {
 				require_once $controllerFileName;
-				if (class_exists($controller_name)) {
-					$controller = new $controller_name($module_name, $controller_name, $action_name);
+				if (class_exists($controllerName)) {
+					$controller = new $controllerName($moduleName, $controllerName, $action_name);
+					if (method_exists($controller, 'beforeAction'))
+						$controller->beforeAction();
 					$controller->addToConfigBeforeRender();
 					if (method_exists($controller, $action_name)) {
-						$controller->$action_name();
-						$controller->always();
-					}else{
-						$controller->isError();
+						$controller->$action_name($routeConf['defaultParams'] ? $routeConf['defaultParams'] : false);
+						if (method_exists($controller, 'afterAction'))
+							$controller->afterAction();
+					}elseif(method_exists($controller, 'isError')){
+						$controller->isError('404', $isAjax);
 					}
 					$controller->addToConfigAfterRender();
 				}
 			}else{
-				$indexController = new IndexController($module_name, $controller_name, $action_name);
-				$indexController->addToConfigBeforeRender();
-				$indexController->isError();
-				$indexController->addToConfigAfterRender();
-			}
-			
-		}
-
-	}
-
-	public function addGetParams(){
-		if ($this->getParams){
-			foreach ($this->getParams as $value){
-				if ($value[0]){
-					$_GET[$value[0]] = isset($value[1]) ? $value[1] : false;
-				}
+				$indexController = new IndexController($moduleName, $controllerName, $action_name);
+				if (method_exists($indexController, 'isError')){
+					$indexController->addToConfigBeforeRender();
+					$indexController->isError('404', $isAjax);
+					$indexController->addToConfigAfterRender();
+				}	
 			}
 		}
 	}
+
+	public function throwErrorMessage($message = '', $status = 1){
+		throw new Exception($message, 1);
+	}
+
 }
